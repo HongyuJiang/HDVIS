@@ -1,56 +1,17 @@
 <template>
   <div id="app">
     <div class="float-layer left-float-layer">
-       <fixed-attr-indicator class="fixed-attrs"/>
-       <dynamic-attr-indicator 
-          name=辖区居民
-          value=1303
-          top=130
-          id = xiaqu
-          class="dynamic-attrs"
-        />
-        <dynamic-attr-indicator
-          name=签约人数
-          value=974
-          top=230
-          id = qianyue
-          class="dynamic-attrs"
-        /> 
-        <syou-pie-chart
-          class="pie-chart"
-        />
-        <syou-group-pie-chart
-          class="group-pie-chart"
-        />
-        <syou-group-bar-chart
-          class="group-bar-chart"
-        />
-     
-     
+        <contrib-chart class="contrib-chart" name='贡献度排名' />
+
     </div>
 
-    <syou-mapbox-view class="mapbox-view"/>
+    <para-chart class="para-chart" name='平行坐标' />
 
     <div class="float-layer right-float-layer">
-      <syou-vertical-bar-chart class="vertical-bar-chart"/>
-      <syou-tick-dash-chart class="tick-dash-chart"/>
-      <syou-bubble-chart class="bubble-chart" v-bind:data = "bubbleData" />
-      <syou-gauge-chart 
-        id='index-1'
-        right='-50'
-        container="gauge1" 
-        class="gauge-chart" 
-        value='100'
-        name='签约评估得分'
-      />
-      <syou-gauge-chart
-        id='index-2'
-        right='200'
-        container="gauge2" 
-        class="gauge-chart"
-        value='90'
-        name='达标评估得分'
-      />
+     
+      <syou-bubble-chart class="bubble-chart" name='投影视图'  />
+    
+    
     </div>  
 
   </div>
@@ -60,38 +21,18 @@
 
 <script>
 
-import SyouMapboxView from './components/SyouMapboxView';
-
 ////////////////////////////////////////////////////
-import SyouPieChart from './components/SyouPieChart';
-import SyouLineChart from './components/SyouLineChart';
-import SyouGaugeChart from './components/SyouGaugeChart';
-import SyouRatioChart from './components/SyouRatioChart';
-import SyouGroupBarChart from './components/SyouGroupBarChart';
-import FixedAttrIndicator from './components/FixedAttrIndicator';
-import DynamicAttrIndicator from './components/DynamicAttrIndicator';
-//import SyouBubbleFrequencyChart from './components/SyouBubbleFrequencyChart';
-import SyouGroupPieChart from './components/SyouGroupPieChart';
-import SyouVerticalBarChart from './components/SyouVerticalBarChart';
-import SyouTickDashChart from './components/SyouTickDashChart';
 import SyouBubbleChart from './components/SyouBubbleChart';
+import ParaChart from './components/ParaChart';
+import ContribChart from './components/ContribChart';
 import DataProvider from './DataProvider';
 
 export default {
   name: 'App',
   components: {
-    SyouPieChart,
-    SyouLineChart,
-    SyouGaugeChart,
-    SyouMapboxView,
-    SyouRatioChart,
-    SyouGroupBarChart,
-    SyouGroupPieChart,
-    SyouVerticalBarChart,
-    FixedAttrIndicator,
-    DynamicAttrIndicator,
-    SyouTickDashChart,
     SyouBubbleChart,
+    ParaChart,
+    ContribChart,
   },
   data () {
     return {
@@ -99,16 +40,6 @@ export default {
     }
   },
   mounted: function() {
-
-    DataProvider.getItemGroupCsv().then(response => {
-
-          //this data is bind with the instance of component
-          this.bubbleData = response.data
-          
-        }, error => {
-
-          console.log('unable to get data')
-        });
 
   }
 }
@@ -146,7 +77,7 @@ body {
 }
 
 .chart-name{
-    color:white; 
+    color:black; 
     margin-bottom:30px;
     border-top: 3px solid #F0B04D;
     background: rgba(255,255,255,0.1);

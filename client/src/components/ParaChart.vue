@@ -1,4 +1,42 @@
-var d3 = require('d3');
+<template>
+<div class='para-chart-container'>
+      <div class='chart-name chart-name-right'>{{name}}</div>
+      <div v-bind:id='id' class='para-container'>
+   
+      </div>
+  </div>
+</template>
+
+<script>
+ 
+const d3 = require('d3');
+import * as dsv from 'd3-dsv';
+
+import DataProvider from '../DataProvider';
+
+const props = {
+  id: {
+    type: String,
+    default: () => 'para-chart-container',
+  },
+  name: {
+    type: String,
+    default: () => '慢病-小组统计',
+  },
+  focus: {
+    type: String,
+    default: () => '高血压',
+  },
+  top:{
+    type: Number,
+    default: () => 80,
+  },
+  right:{
+    type: Number,
+    default: () => 500,
+  },
+  data: {}
+};
 
 Array.prototype.remove = function(from, to) {
     var rest = this.slice((to || from) + 1 || this.length);
@@ -6,39 +44,85 @@ Array.prototype.remove = function(from, to) {
     return this.push.apply(this, rest);
   };
 
-var margin = {top: 30, right: 50, bottom: 10, left: 50},
-    width = 1000 - margin.left - margin.right,
-    height = 400 - margin.top - margin.bottom;
+
+export default {
+
+  name: 'para-chart',
+  props,
+  mounted: function() {
+
+    d3.select('#' + this.id)
+    .style('position', 'absolute')
+    .style('top', this.top + 'px')
+    .style('right', this.right + 'px')
+
+    //Initialize the size of chart
+    this.windowResize(window.innerWidth * 0.3, window.innerHeight * 0.3);
+
+    //Add a listener for window's resize`
+    window.addEventListener("resize", () => {
+      this.windowResize(window.innerWidth * 0.3, window.innerHeight * 0.3);
+    });
+
+
+    d3.select(d3.select('#' + this.id).node().parentNode)
+    .style('top', this.top + 'px')
+    .style('right', this.right + 'px')
+
+    DataProvider.getPopulationData().then(response => {
+
+        let data = dsv.csvParse(response.data)
+
+        let {columns, data_dict} = this.dataProcess(data)
+          
+        this.chartInit(data, columns, data_dict)
+
+    }, error => {
+       
+    });
     
+  },
 
-// Function to compute density
-function kernelDensityEstimator(kernel, X) {
-    return function(V) {
-      return X.map(function(x) {
-        return [x, d3.mean(V, function(v) { return kernel(x - v); })];
-      });
-    };
-  }
-function kernelEpanechnikov(k) {
-    return function(v) {
-      return Math.abs(v /= k) <= 1 ? 0.75 * (1 - v * v) / k : 0;
-    };
-  }
+  methods: {
 
-module.exports = {
+    //data process 
+    dataProcess(contents){
 
-    darw: function (container, data, dimensions, data_dict) {
+        let population_data = contents;
+        
+        let columns = population_data['columns']
 
-        let svg = container.append('g').attr('transform','translate(100,130)')
+        columns.shift()
+
+        let data_dict = this.get_dimension_values(population_data, columns)
+
+        return  {columns, data_dict}
+    },
+
+    //Chart initialization
+    chartInit(data, dimensions, data_dict){
+
+        let container = d3.select('#' + this.id)
+
+        let width = 800,
+            height = 400
+        
+        let svg = container.append('svg')
+        .attr('width', width + 200)
+        .attr('height', height + 50)
+        .append('g')
+        .attr('transform', 'translate(100,0)')
+
+
         var formatPercent = d3.format('~s')
 
         let yScale = {}
 
         let zScale = d3.scaleLinear().domain([0, height])
 
-        for (i in dimensions) {
+        for (let index in dimensions) {
 
-            name = dimensions[i]
+            name = dimensions[index]
 
             let true_extent = d3.extent(data, function(d) { return +d[name]; })
             let fitted_extent = [true_extent[0] * 0.8, true_extent[1] * 1.2]
@@ -77,9 +161,11 @@ module.exports = {
 
         let dist_data = {}
 
+        let that = this
+
         dist_dimensions.forEach(function(dim){
 
-            let kde = kernelDensityEstimator(kernelEpanechnikov(7), zScale.ticks(40))
+            let kde = that.kernelDensityEstimator(that.kernelEpanechnikov(7), zScale.ticks(40))
             let density =  kde( data_dict[dim].map(d => yScale[dim](d)) )
             dist_data[dim] = density
         })
@@ -148,6 +234,76 @@ module.exports = {
           .attr('font-size', '20')
           .attr('text-anchor','start')
           .text('平行坐标与数据分布')
+    },
+
+    //Update the focus item
+    focusUpdate(focus){
+
+
+    },
+
+    //Change chart size when window's size changed
+    windowResize(width, height){
+
+      //this.chart.changeSize(width, height)
+
+    },
+    // Function to compute density
+    kernelDensityEstimator(kernel, X) {
+        return function(V) {
+        return X.map(function(x) {
+            return [x, d3.mean(V, function(v) { return kernel(x - v); })];
+        });
+        };
+    },
+    kernelEpanechnikov(k) {
+        return function(v) {
+        return Math.abs(v /= k) <= 1 ? 0.75 * (1 - v * v) / k : 0;
+        };
+    },
+    get_dimension_values(data, dimension){
+
+        let data_dict = {}
+
+        dimension.forEach(function(dim){
+            
+            data_dict[dim] = []
+        })
+
+        data.forEach(function(d){
+
+            dimension.forEach(function(dim){
+            
+                data_dict[dim].push(parseFloat(d[dim]))
+            })
+    
+        })
+
+        return data_dict
     }
 
-};
+  }
+}
+</script>
+
+<style lang="css">
+
+
+.bubble-chart-container{
+  
+  position:absolute;
+}
+
+.bubble-container-name{
+
+   position:absolute;
+   width:100%;
+   top:60%;
+   color:rgba(255,255,255,0.5);
+   font-size: 70px;
+   text-align: center;
+   text-anchor: middle;
+
+}
+
+</style>

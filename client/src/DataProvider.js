@@ -1,16 +1,13 @@
 import axios from 'axios';
 
 export default class DataProvider {
-    static getCountyJson() {
+ 
+    static getPCAData(){
 
-        return axios.get('http://localhost:3001/regions');
+        return axios.get('https://raw.githubusercontent.com/HongyuJiang/HDVIS/master/data/2010-province-pca-points.csv')
     }
-    static getRegionJson() {
+    static getPopulationData(){
 
-        return axios.get('https://raw.githubusercontent.com/longwosion/geojson-map-china/master/geometryCouties/510700.json');
-    }
-    static getItemGroupCsv() {
-
-        return axios.get('http://localhost:3001/groupitem');
+        return axios.get('https://raw.githubusercontent.com/HongyuJiang/HDVIS/master/data/2010-population.csv')
     }
 }

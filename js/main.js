@@ -83,7 +83,7 @@ app.get('/', function (req, res) {
             width = document.body.scrollWidth
 
         let population_data = d3_dsv.csvParse(contents.slice(1, contents.length));
-
+        
         let columns = population_data['columns']
 
         columns.shift()
