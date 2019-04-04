@@ -132,7 +132,7 @@ export default {
     position:absolute;
     width: 630px;
     height: 410px;
-    overflow-y: auto
+    
 }
 
 #table-container .chart-name{
@@ -144,7 +144,12 @@ export default {
 
 #table-container table{
 
-    margin-top:50px
+    margin-top:50px;
+}
+
+div .vuetable-body-wrapper{
+    overflow-y: auto;
+    height: 430px;
 }
 
 </style>

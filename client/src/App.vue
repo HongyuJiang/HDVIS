@@ -2,12 +2,12 @@
   <div id="app">
     <div class="float-layer left-float-layer">
         <contrib-chart class="contrib-chart" name='贡献度排名' />\
-        <trend-chart class="trend-chart" name='主成分趋势' />
+        <trend-chart class="trend-chart" name='关注城市出入省趋势' />
 
     </div>
 
     <para-chart class="para-chart" name='平行坐标' />
-     <map-view class="map-view" name='地图'  />
+     <map-view class="map-view" name='出省-入省地图'  />
 
     <div class="float-layer right-float-layer">
      

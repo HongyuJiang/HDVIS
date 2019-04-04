@@ -84,7 +84,7 @@ export default {
 
     dataProcess(data){
 
-        let provincesYears = dsv(data)
+        let provincesYears = dsv.csvParse(data)
 
         let provincesDict = {}
 
@@ -114,7 +114,7 @@ export default {
 
             d['出省人数'] = parseInt(d['出省人数'])
             d['入省人数'] = parseInt(d['入省人数'])
-            d['Year'] = parseInt(d['Year'])
+            d['Year'] = '' + d['Year']
         })
 
         let min1 = d3.min(metaYears, d => d['出省人数'])
@@ -136,16 +136,14 @@ export default {
 
       
         let line1 = d3.line()
-            .defined(d => !isNaN(d.value1))
             .x(d => x(d.Year))
             .y(d => y(d['出省人数']))
 
         let line2 = d3.line()
-            .defined(d => !isNaN(d.value2))
             .x(d => x(d.Year))
             .y(d => y(d['入省人数']))
 
-        let x = d3.scaleTime()
+        let x = d3.scaleLinear()
             .domain([2010, 2019])
             .range([margin.left, width - margin.right])
         
@@ -159,13 +157,13 @@ export default {
 
         let yAxis = g => g
             .attr("transform", `translate(${margin.left},0)`)
-            .call(d3.axisLeft(y).ticks(8))
+            .call(d3.axisLeft(y).ticks(8).tickFormat(d3.format(".0s")))
             .call(g => g.select(".domain").remove())
             .call(g => g.select(".tick:last-of-type text").clone()
                 .attr("x", 3)
                 .attr("text-anchor", "start")
                 .attr("font-weight", "bold")
-                .text(data.y))
+                .text(metaYears.y))
 
         svg.append("g")
             .call(xAxis);
@@ -174,7 +172,7 @@ export default {
             .call(yAxis);
         
         svg.append("path")
-            .datum(data)
+            .datum(metaYears)
             .attr("fill", "none")
             .attr("stroke", "#FEB331")
             .attr("stroke-width", 2)
@@ -192,7 +190,7 @@ export default {
             .attr('r',3)
         
         svg.append("path")
-            .datum(data)
+            .datum(metaYears)
             .attr("fill", "none")
             .attr("stroke", "#FF7C24")
             .attr("stroke-width", 2)
@@ -201,7 +199,7 @@ export default {
             .attr("d", line2);
 
         svg.selectAll(".circle")
-            .data(data)
+            .data(metaYears)
             .enter()
             .append('circle')
             .attr("fill", "#999")
