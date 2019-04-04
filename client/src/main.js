@@ -2,11 +2,9 @@
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from 'vue'
 import App from './App'
-import SuiVue from 'semantic-ui-vue';
 import 'semantic-ui-css/semantic.min.css';
 
 Vue.config.productionTip = false
-Vue.use(SuiVue);
 
 /* eslint-disable no-new */
 new Vue({
