@@ -68,15 +68,63 @@ export default {
       this.windowResize(window.innerWidth * 0.3, window.innerHeight * 0.3);
     });
 
-    this.chartInit()
+    DataProvider.getProvincesYears().then(response => {
+
+          let data = this.dataProcess(response.data)
+              
+          this.chartInit(data)
+
+        }, error => {
+       
+    });
 
   },
 
   methods: {
 
+    dataProcess(data){
+
+        let provincesYears = dsv(data)
+
+        let provincesDict = {}
+
+        provincesYears.forEach(function(d){
+
+            if(provincesDict[d['省份']] != undefined){
+
+                provincesDict[d['省份']].push(d)
+            }
+            else{
+
+                provincesDict[d['省份']] = []
+                provincesDict[d['省份']].push(d)
+            }
+        })
+
+        return provincesDict
+    },
+
 
     //Chart initialization
-    chartInit(){
+    chartInit(provincesDict){
+
+        let metaYears = provincesDict['四川']
+
+        metaYears.forEach(function(d){
+
+            d['出省人数'] = parseInt(d['出省人数'])
+            d['入省人数'] = parseInt(d['入省人数'])
+            d['Year'] = parseInt(d['Year'])
+        })
+
+        let min1 = d3.min(metaYears, d => d['出省人数'])
+        let min2 = d3.min(metaYears, d => d['入省人数'])
+
+        let max1 = d3.max(metaYears, d => d['出省人数'])
+        let max2 = d3.max(metaYears, d => d['入省人数'])
+
+        let min = min1 < min2 ? min1 : min2
+        let max = max1 > max2 ? max1 : max2
 
         let container = d3.select('#' + this.id)
         
@@ -86,37 +134,23 @@ export default {
         .append('g')
         .attr('transform', 'translate(0,0)')
 
-        let data = []
-
-        for(let i=0;i<10;i++){
-
-            let year = i + 2008
-
-            let val1 = Math.random() * 0.6
-
-            let val2 = Math.random() * 0.6
-
-            let date = new Date(year + '-01-01 12:00:00')
-
-            data.push({'date': date,'value1':val1,'value2':val2})
-        }
-
+      
         let line1 = d3.line()
             .defined(d => !isNaN(d.value1))
-            .x(d => x(d.date))
-            .y(d => y(d.value1))
+            .x(d => x(d.Year))
+            .y(d => y(d['出省人数']))
 
         let line2 = d3.line()
             .defined(d => !isNaN(d.value2))
-            .x(d => x(d.date))
-            .y(d => y(d.value2))
+            .x(d => x(d.Year))
+            .y(d => y(d['入省人数']))
 
         let x = d3.scaleTime()
-            .domain(d3.extent(data, d => d.date))
+            .domain([2010, 2019])
             .range([margin.left, width - margin.right])
         
         let y = d3.scaleLinear()
-            .domain([0,0.7])
+            .domain([min,max])
             .range([height - margin.bottom, margin.top])
 
         let xAxis = g => g
@@ -149,12 +183,12 @@ export default {
             .attr("d", line1);
 
         svg.selectAll(".circle")
-            .data(data)
+            .data(metaYears)
             .enter()
             .append('circle')
             .attr("fill", "#999")
-            .attr('cx', d => x(d.date))
-            .attr('cy', d => y(d.value1))
+            .attr('cx', d => x(d.Year))
+            .attr('cy', d => y(d['出省人数']))
             .attr('r',3)
         
         svg.append("path")
@@ -171,8 +205,8 @@ export default {
             .enter()
             .append('circle')
             .attr("fill", "#999")
-            .attr('cx', d => x(d.date))
-            .attr('cy', d => y(d.value2))
+            .attr('cx', d => x(d.Year))
+            .attr('cy', d => y(d['入省人数']))
             .attr('r',3)
 
         y.ticks(8).forEach(function(val){
