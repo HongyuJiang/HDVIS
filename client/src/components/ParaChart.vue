@@ -1,6 +1,6 @@
 <template>
 <div class='para-chart-container'>
-      <div class='chart-name chart-name-right'>{{name}}</div>
+      <div class='chart-name chart-name-middle'>{{name}}</div>
       <div v-bind:id='id' class='para-container'>
    
       </div>
@@ -31,11 +31,12 @@ const props = {
     type: Number,
     default: () => 80,
   },
-  right:{
+  left:{
     type: Number,
-    default: () => 500,
+    default: () => 470,
   },
-  data: {}
+  data: {},
+ 
 };
 
 Array.prototype.remove = function(from, to) {
@@ -53,8 +54,8 @@ export default {
 
     d3.select('#' + this.id)
     .style('position', 'absolute')
+    .style('left', this.left + 'px')
     .style('top', this.top + 'px')
-    .style('right', this.right + 'px')
 
     //Initialize the size of chart
     this.windowResize(window.innerWidth * 0.3, window.innerHeight * 0.3);
@@ -80,6 +81,11 @@ export default {
     }, error => {
        
     });
+
+    this.$root.$on('PointsSeleted', (points) => {
+
+      this.provinceHighlight(points)
+    })
     
   },
 
@@ -113,6 +119,7 @@ export default {
         .append('g')
         .attr('transform', 'translate(100,0)')
 
+        this.svg = svg
 
         var formatPercent = d3.format('~s')
 
@@ -178,10 +185,10 @@ export default {
              bins_container.append("path")
              .attr("class", "mypath")
              .datum(dist_data[dim])
-             .attr("fill", "#6F808C")
+             .attr("fill", "#FE7F2D")
              .attr("opacity", "1")
-             .attr("stroke", "#6F808C")
-             .attr("stroke-width", 1)
+             .attr("stroke", "black")
+             .attr("stroke-width", 2)
              .attr("stroke-linejoin", "round")
              .attr("d",  d3.line()
                  .curve(d3.curveBasis)
@@ -196,10 +203,10 @@ export default {
             .data(data)
             .enter()
             .append("path")
-            .attr("class", function (d) { return "line " +  d['省份'] } ) // 2 class for each line: 'line' and the group name
+            .attr("class", 'province') // 2 class for each line: 'line' and the group name
             .attr("d",  path)
             .style("fill", "none" )
-            .style("stroke", '#5F909C' )
+            .style("stroke", '#666' )
             .style("opacity", 0.3)
 
         // Draw the axis:
@@ -234,6 +241,25 @@ export default {
           .attr('font-size', '20')
           .attr('text-anchor','start')
           .text('平行坐标与数据分布')
+    },
+
+    provinceHighlight(selected){
+
+        let selectedJugher = {}
+
+        selected.forEach(function(d){
+
+            selectedJugher[d['name']] = 1
+        })
+
+        this.svg.selectAll('.province')
+        .style('stroke', function(d){
+            return selectedJugher[d['省份']] == 1 ? 'red' : '#666'
+        })
+        .style('stroke-width', function(d){
+            return selectedJugher[d['省份']] == 1 ? '2' : '1'
+        })
+
     },
 
     //Update the focus item

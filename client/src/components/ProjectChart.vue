@@ -1,7 +1,7 @@
 <template>
-<div class='bubble-chart-container'>
+<div class='project-chart-container'>
       <div class='chart-name chart-name-right'>{{name}}</div>
-      <div v-bind:id='id' class='bubble-container'>
+      <div v-bind:id='id' class='project-container'>
    
       </div>
   </div>
@@ -17,7 +17,7 @@ import DataProvider from '../DataProvider';
 const props = {
   id: {
     type: String,
-    default: () => 'bubble-chart-container',
+    default: () => 'project-chart-container',
   },
   name: {
     type: String,
@@ -29,7 +29,7 @@ const props = {
   },
   top:{
     type: Number,
-    default: () => 50,
+    default: () => 40,
   },
   right:{
     type: Number,
@@ -40,7 +40,7 @@ const props = {
 
 export default {
 
-  name: 'bubble-chart',
+  name: 'project-chart',
   props,
   mounted: function() {
 
@@ -54,6 +54,7 @@ export default {
 
 
     d3.select(d3.select('#' + this.id).node().parentNode)
+    .style('position', 'absolute')
     .style('top', this.top + 'px')
     .style('right', this.right + 'px')
 
@@ -70,17 +71,6 @@ export default {
   },
 
   watch:{
-
-    //If data is updated, change chart source
-   // data: function(){
-
-    //  console.log(this.data)
-
-   //   let data = this.dataProcess(this.data, this.focus)
-
-   //   this.chart.changeData(data)
-
-   // },
 
   },
 
@@ -108,16 +98,18 @@ export default {
     //Chart initialization
     chartInit(points){
 
-        let container = d3.select('#bubble-chart-container')
+        var that = this
+
+        let container = d3.select('#' + this.id)
 
         let width = 300,
             height = 300
         
         let svg = container.append('svg')
-        .attr('width', width + 100)
+        .attr('width', width + 120)
         .attr('height', height + 100)
         .append('g')
-        .attr('transform', 'translate(100,0)')
+        .attr('transform', 'translate(0,0)')
 
         var formatPercent = d3.format('.0s')
         // Scales
@@ -125,7 +117,7 @@ export default {
 
         var xScale = d3.scaleLinear()
             .domain([-3, 7])
-            .range([0,width])
+            .range([100, width + 100])
 
         var yScale = d3.scaleLinear()
             .domain([-3, 5])
@@ -143,6 +135,12 @@ export default {
             .ticks(5)
             .tickFormat(formatPercent);
 
+        points.forEach(function(d){
+
+          d.x = xScale(d.x)
+          d.y = yScale(d.y)
+        })
+
         // Circles
         var circles = svg.selectAll('circle')
             .data(points)
@@ -152,15 +150,16 @@ export default {
 
                 d3.select(this).attr('fill','red')
             })
-            .attr('cx',function (d) { return xScale(d.x) })
-            .attr('cy',function (d) { return yScale(d.y) })
+            .attr('cx',function (d) { return (d.x) })
+            .attr('cy',function (d) { return (d.y) })
             .attr('r', 3)
             .attr('stroke','#666')
             .attr('stroke-width',1)
             .attr('fill', '#333')
 
-        container.on("mousedown", function() {
+        container.select('svg').on("mousedown", function(e) {
 
+                d3.event.preventDefault();
                 var p = d3.mouse(this);
             
                 svg.append( "rect")
@@ -170,10 +169,13 @@ export default {
                 .attr('width', 0)
                 .attr('class', 'selection')
                 .attr('stroke','grey')
-                _
+                .attr('fill','none')
+              
                
             })
-            .on("mousemove", function() {
+            .on("mousemove", function(e) {
+
+                d3.event.preventDefault();
                 var s = d3.select("rect.selection");
             
                 if( !s.empty()) {
@@ -209,11 +211,46 @@ export default {
                      .attr('y', d.y)
                      .attr('width', d.width)
                      .attr('height', d.height)
-                    //console.log( d);
+      
                 }
             })
             .on( "mouseup", function() {
-                svg.select( "rect.selection").remove();
+
+                let radius = 1.5
+                var s = d3.select("rect.selection");
+
+                if( !s.empty()) {
+
+
+                  let d = {
+                        x       : parseInt( s.attr( "x"), 10),
+                        y       : parseInt( s.attr( "y"), 10),
+                        width   : parseInt( s.attr( "width"), 10),
+                        height  : parseInt( s.attr( "height"), 10)
+                  }
+
+                  svg.selectAll('circle').classed( "selected", false);
+
+                  let selectedPoints = []
+
+                  svg.selectAll('circle').each( function( state_data, i) {
+
+                        if(
+                            state_data.x-radius>=d.x && state_data.x+radius<=d.x+d.width && 
+                            state_data.y-radius>=d.y && state_data.y+radius<=d.y+d.height
+                        ) {
+
+                          selectedPoints.push(state_data)
+
+                          d3.select(this).classed( "selected", true);
+                        }
+                  });
+
+                  that.$root.$emit('PointsSeleted', selectedPoints)
+                
+                }
+
+                  svg.select("rect.selection").remove();
             });
     
         // X-axis
@@ -226,7 +263,7 @@ export default {
             .attr('class','label')
             .attr('fill','black')
             .attr('y', height - 10)
-            .attr('x', width / 2)
+            .attr('x', width / 2 + 100)
             .attr('dy','.71em')
             .attr('font-size','10')
             .style('text-anchor','middle')
@@ -234,7 +271,7 @@ export default {
         // Y-axis
         svg.append('g')
             .attr('class', 'axis')
-            .attr('transform', 'translate(' + width + ',0)')
+            .attr('transform', 'translate(' + (width+100) + ',0)')
             .call(yAxis)
 
         svg.append('text') // y-axis Label
@@ -242,7 +279,7 @@ export default {
             .attr('fill','black')
             .attr('transform','rotate(-90)')
             .attr('x', -height / 2)
-            .attr('y',5)
+            .attr('y',105)
             .attr('dy','.71em')
             .attr('font-size','10')
             .style('text-anchor','middle')
@@ -250,10 +287,10 @@ export default {
 
         let box_round_lines = 
         [
-            {'x1':300,'x2':300,'y1':0,'y2':300}, 
-            {'x1':0,'x2':300,'y1':0,'y2':0},
-            {'x1':0,'x2':0,'y1':300,'y2':0},
-            {'x1':0,'x2':300,'y1':300,'y2':300},
+            {'x1':400,'x2':400,'y1':0,'y2':300}, 
+            {'x1':100,'x2':400,'y1':0,'y2':0},
+            {'x1':100,'x2':100,'y1':300,'y2':0},
+            {'x1':100,'x2':400,'y1':300,'y2':300},
         ]
         
         svg.append('g')
@@ -268,8 +305,8 @@ export default {
             .attr('stroke','#333')
             .attr('stroke-width', 2)
 
-        let x_series = points.map(d => d.x)
-        let y_series = points.map(d => d.y)
+        let x_series = points.map(d => xScale.invert(d.x))
+        let y_series = points.map(d => yScale.invert(d.y))
 
 
         var histogram = d3.histogram()
@@ -300,8 +337,8 @@ export default {
             .data(bins)
             .enter()
             .append("rect")
-            .attr("x", d =>  width - xScale(d.length)/5)
-            .attr("transform", function(d) { return "translate(" + (-310) + "," + xScale(d.x0) + ")"; })
+            .attr("x", d =>  width + 100 - xScale(d.length)/5)
+            .attr("transform", function(d) { return "translate(" + (-310) + "," + (xScale(d.x0)-100) + ")"; })
             .attr("width", function(d) { return xScale(d.length)/5; })
             .attr("height", function(d) { return xScale(d.x1) - xScale(d.x0) - 1; })
             .attr("y", 1)
@@ -357,6 +394,11 @@ export default {
    text-align: center;
    text-anchor: middle;
 
+}
+
+.selected{
+
+  fill:red;
 }
 
 </style>

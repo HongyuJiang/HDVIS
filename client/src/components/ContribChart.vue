@@ -1,6 +1,6 @@
 <template>
 <div class='contrib-chart-container'>
-      <div class='chart-name chart-name-right'>{{name}}</div>
+      <div class='chart-name chart-name-left'>{{name}}</div>
       <div v-bind:id='id' class='contrib-container'>
    
       </div>
@@ -29,7 +29,7 @@ const props = {
   },
   top:{
     type: Number,
-    default: () => 50,
+    default: () => 20,
   },
   left:{
     type: Number,
@@ -43,11 +43,6 @@ export default {
   name: 'contrib-chart',
   props,
   mounted: function() {
-
-    //d3.select('#' + this.id)
-    //    .style('position', 'absolute')
-    //    .style('top', this.top + 'px')
-    //    .style('left', this.left + 'px')
 
     //Initialize the size of chart
     this.windowResize(window.innerWidth * 0.3, window.innerHeight * 0.3);
@@ -68,16 +63,7 @@ export default {
 
   watch:{
 
-    //If data is updated, change chart source
-   // data: function(){
 
-    //  console.log(this.data)
-
-   //   let data = this.dataProcess(this.data, this.focus)
-
-   //   this.chart.changeData(data)
-
-   // },
 
   },
 
@@ -87,16 +73,16 @@ export default {
     //Chart initialization
     chartInit(){
 
-        let width = 400,
-            height = 400
+        let width = 350,
+            height = 350
 
         let container = d3.select('#' + this.id)
 
          let svg = container.append('svg')
         .attr('width', width + 50)
-        .attr('height', height + 50)
+        .attr('height', height + 100)
         .append('g')
-        .attr('transform', 'translate(0,0)')
+        .attr('transform', 'translate(50,30)')
 
        // let svg = container.append('g')//.attr('transform','translate(700,600)')
 
