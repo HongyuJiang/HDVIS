@@ -141,6 +141,8 @@ export default {
 
             let count = parseFloat(d['迁出/迁入'])
 
+            if(d['省份'] == '内蒙古') point[1] += 35
+
             marker_geo_coor.push({'name': d['省份'], 'x':point[0], 'y':point[1], 'count':count})
         })
 
@@ -151,11 +153,7 @@ export default {
             .attr('x', d => d.x - 5)
             .attr('y',  function(d){
 
-                if (d.count >= 1)
-
-                return d.y - d.count * 2
-
-                else return d.y - 1/d.count * 2
+                return d.count >= 1 ? d.y - d.count * 2 : d.y - 1/d.count * 2
             })
             .attr('fill', d => d.count >= 1 ? '#f9483b' : '#5cabf9')
             .attr('opacity', 0.7)
@@ -186,6 +184,34 @@ export default {
 
                that.$root.$emit('ProvinceSeleted', d.name)
             })
+
+        svg.append('rect')
+          .attr('x', 200)
+          .attr('y', 300)
+          .attr('width', 30)
+          .attr('height', 13)
+          .attr('fill', '#f9483b')
+
+        svg.append('rect')
+          .attr('x', 200)
+          .attr('y', 330)
+          .attr('width', 30)
+          .attr('height', 13)
+          .attr('fill', '#5cabf9')
+
+
+        svg.append('text')
+          .attr('x', 242)
+          .attr('y', 310)
+          .attr('font-size', 12)
+          .text('迁入 > 迁出')
+
+        svg.append('text')
+          .attr('x', 242)
+          .attr('y', 340)
+          .attr('font-size', 12)
+          .text('迁出 > 迁入')
+        
     },
 
     //Update the focus item

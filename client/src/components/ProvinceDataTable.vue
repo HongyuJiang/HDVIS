@@ -24,11 +24,7 @@ const props = {
   },
   name: {
     type: String,
-    default: () => '慢病-小组统计',
-  },
-  focus: {
-    type: String,
-    default: () => '高血压',
+    default: () => '未命名',
   },
   top:{
     type: Number,
@@ -66,11 +62,8 @@ export default {
     DataProvider.getPopulationData().then(response => {
 
         let data = dsv.csvParse(response.data)
-
         let {columns, population_data} = this.dataProcess(data)
-          
         that.columns = columns
-
         that.rows = population_data
 
     }, error => {
@@ -86,7 +79,6 @@ export default {
     dataProcess(contents){
 
         let population_data = contents;
-        
         let columns = population_data['columns']
         let data_dict = this.get_dimension_values(population_data, columns)
 
@@ -128,7 +120,6 @@ export default {
 
 
 #table-container{
-  
     position:absolute;
     width: 630px;
     height: 410px;
@@ -136,14 +127,12 @@ export default {
 }
 
 #table-container .chart-name{
-
    top: 0px;
    position: absolute 
 
 }
 
 #table-container table{
-
     margin-top:50px;
 }
 

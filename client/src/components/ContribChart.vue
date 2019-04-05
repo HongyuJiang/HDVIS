@@ -21,11 +21,7 @@ const props = {
   },
   name: {
     type: String,
-    default: () => '贡献度排名',
-  },
-  focus: {
-    type: String,
-    default: () => '高血压',
+    default: () => '未命名',
   },
   top:{
     type: Number,
@@ -44,15 +40,6 @@ export default {
   props,
   mounted: function() {
 
-    //Initialize the size of chart
-    this.windowResize(window.innerWidth * 0.3, window.innerHeight * 0.3);
-
-    //Add a listener for window's resize`
-    window.addEventListener("resize", () => {
-      this.windowResize(window.innerWidth * 0.3, window.innerHeight * 0.3);
-    });
-
-
     d3.select(d3.select('#' + this.id).node().parentNode)
     .style('position', 'absolute')
     .style('top', this.top + 'px')
@@ -61,14 +48,7 @@ export default {
     this.chartInit()
   },
 
-  watch:{
-
-
-
-  },
-
   methods: {
-
 
     //Chart initialization
     chartInit(){
@@ -89,6 +69,8 @@ export default {
         let contrib_data = [[0.4706703162, -0.32356494, 0.5237312673, 0.2503520532, -0.1587296969, -0.4160826872, -0.06351887283, -0.3666742773], 
         [-0.2305916178, -0.4222965801, -0.1046096292,0.2902428, 0.5631073491, -0.08549629881, 0.578059447, -0.121477647]]
 
+        let dimensions = ['出省人数','入省人数','流动比','男女比例','返乡时长','无座率','中转次数','平均年龄']
+
         let points = []
 
         for(let i=0;i<contrib_data.length;i++){
@@ -100,6 +82,7 @@ export default {
                 if(i==0){  points.push({'x':val})   }
                 else{
                     points[j].y = val
+                    points[j].name = dimensions[j]
                     points[j].angle = Math.atan(points[j].y / points[j].x)
 
                 }
@@ -171,6 +154,16 @@ export default {
             .attr('cy',function (d) { return yScale(d.y) })
             .attr('r','3')
             .attr('fill', '#25616E')
+
+        svg.selectAll('dim_name')
+            .data(points)
+            .enter()
+            .append('text')
+            .attr('x',function (d) { return xScale(d.x) })
+            .attr('y',function (d) { return yScale(d.y) + 20 })
+            .attr('text-anchor','middle')
+            .attr('font-size',11)
+            .text(d => d.name)
           
 
         svg.append("defs").append("marker")
@@ -236,18 +229,6 @@ export default {
   
     },
 
-    //Update the focus item
-    focusUpdate(focus){
-
-
-    },
-
-    //Change chart size when window's size changed
-    windowResize(width, height){
-
-      //this.chart.changeSize(width, height)
-
-    }
   }
 }
 </script>

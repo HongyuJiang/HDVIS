@@ -111,13 +111,13 @@ export default {
         let container = d3.select('#' + this.id)
 
         let width = 800,
-            height = 400
+            height = 360
         
         let svg = container.append('svg')
         .attr('width', width + 200)
         .attr('height', height + 50)
         .append('g')
-        .attr('transform', 'translate(100,0)')
+        .attr('transform', 'translate(100,30)')
 
         this.svg = svg
 

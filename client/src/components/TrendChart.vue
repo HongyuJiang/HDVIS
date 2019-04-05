@@ -111,13 +111,6 @@ export default {
         this.provincesDict = provincesDict
     },
 
-
-    chartUpdate(){
-
-
-    },
-
-
     //Chart initialization
     chartInit(province){
 
@@ -277,6 +270,19 @@ export default {
             .attr('text-anchor','start')
             .attr('fill','black')
             .text(d => d.title)
+
+        svg.append('circle')
+            .attr('cx', 415)
+            .attr('cy', 25)
+            .attr('r', 20)
+            .attr('fill','rgb(255, 119, 95)')
+
+        svg.append('text')
+            .attr('x', 415)
+            .attr('y', 28)
+            .attr('text-anchor','middle')
+            .attr('fill','white')
+            .text(province)
     },
 
   

@@ -7,7 +7,7 @@
     </div>
 
     <para-chart class="para-chart" name='平行坐标' />
-     <map-view class="map-view" name='出省-入省地图'  />
+     <map-view class="map-view" name='迁入-迁出对比'  />
 
     <div class="float-layer right-float-layer">
      
