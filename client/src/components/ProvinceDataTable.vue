@@ -152,4 +152,9 @@ div .vuetable-body-wrapper{
     height: 430px;
 }
 
+
+div .vuetable-body-wrapper *{
+    font-size:8px !important;
+}
+
 </style>

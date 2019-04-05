@@ -89,6 +89,9 @@ export default {
     //Chart initialization
     chartInit(mapData, population_data){
 
+
+        let that = this
+
         let width = 850,
             height = 350
 
@@ -179,6 +182,10 @@ export default {
             .attr('x', d => d.x - 15)
             .attr('y', d => d.y + 20)
             .text(d => d.name)
+            .on('click', function(d){
+
+               that.$root.$emit('ProvinceSeleted', d.name)
+            })
     },
 
     //Update the focus item

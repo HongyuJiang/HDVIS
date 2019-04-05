@@ -72,11 +72,18 @@ export default {
 
           let data = this.dataProcess(response.data)
               
-          this.chartInit(data)
+          this.chartInit('四川')
 
         }, error => {
        
     });
+
+    this.$root.$on('ProvinceSeleted', (province) => {
+
+      this.chartInit(province)
+    })
+
+    this.provincesDict = {}
 
   },
 
@@ -101,14 +108,20 @@ export default {
             }
         })
 
-        return provincesDict
+        this.provincesDict = provincesDict
+    },
+
+
+    chartUpdate(){
+
+
     },
 
 
     //Chart initialization
-    chartInit(provincesDict){
+    chartInit(province){
 
-        let metaYears = provincesDict['四川']
+        let metaYears = this.provincesDict[province]
 
         metaYears.forEach(function(d){
 
@@ -127,9 +140,11 @@ export default {
         let max = max1 > max2 ? max1 : max2
 
         let container = d3.select('#' + this.id)
+
+        container.selectAll('*').remove()
         
         let svg = container.append('svg')
-        .attr('width', width + 200)
+        .attr('width', width)
         .attr('height', height + 50)
         .append('g')
         .attr('transform', 'translate(0,0)')
@@ -238,9 +253,9 @@ export default {
 
         let legend_data = []
 
-        legend_data.push({'x': 50,'y':20,'title':'PC1', 'color': '#FEB331'})
+        legend_data.push({'x': 50,'y':20,'title':'出省人数', 'color': '#FEB331'})
 
-        legend_data.push({'x': 150,'y':20,'title':'PC2', 'color': '#FF7C24'})
+        legend_data.push({'x': 150,'y':20,'title':'入省人数', 'color': '#FF7C24'})
 
         svg.selectAll('legend')
             .data(legend_data)
@@ -272,6 +287,11 @@ export default {
 
     },
    
+  },
+
+  watch:{
+
+
   }
 }
 </script>
