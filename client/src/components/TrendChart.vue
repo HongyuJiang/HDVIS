@@ -27,10 +27,6 @@ const props = {
     type: String,
     default: () => '慢病-小组统计',
   },
-  focus: {
-    type: String,
-    default: () => '高血压',
-  },
   top:{
     type: Number,
     default: () => 530,
@@ -60,13 +56,6 @@ export default {
     .style('top', this.top + 'px')
     .style('left', this.left + 'px')
 
-    //Initialize the size of chart
-    this.windowResize(window.innerWidth * 0.3, window.innerHeight * 0.3);
-
-    //Add a listener for window's resize`
-    window.addEventListener("resize", () => {
-      this.windowResize(window.innerWidth * 0.3, window.innerHeight * 0.3);
-    });
 
     DataProvider.getProvincesYears().then(response => {
 
@@ -111,7 +100,6 @@ export default {
         this.provincesDict = provincesDict
     },
 
-    //Chart initialization
     chartInit(province){
 
         let metaYears = this.provincesDict[province]
@@ -122,6 +110,8 @@ export default {
             d['入省人数'] = parseInt(d['入省人数'])
             d['Year'] = '' + d['Year']
         })
+
+        //计算最大最小人数
 
         let min1 = d3.min(metaYears, d => d['出省人数'])
         let min2 = d3.min(metaYears, d => d['入省人数'])
@@ -285,20 +275,9 @@ export default {
             .text(province)
     },
 
-  
-    //Change chart size when window's size changed
-    windowResize(width, height){
-
-      //this.chart.changeSize(width, height)
-
-    },
    
   },
 
-  watch:{
-
-
-  }
 }
 </script>
 

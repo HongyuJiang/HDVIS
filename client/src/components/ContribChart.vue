@@ -31,7 +31,6 @@ const props = {
     type: Number,
     default: () => 50,
   },
-  data: {}
 };
 
 export default {
@@ -40,39 +39,46 @@ export default {
   props,
   mounted: function() {
 
+    //设置图表位置
     d3.select(d3.select('#' + this.id).node().parentNode)
     .style('position', 'absolute')
     .style('top', this.top + 'px')
     .style('left', this.left + 'px')
 
+    //绘制图表
     this.chartInit()
   },
 
   methods: {
 
-    //Chart initialization
+    //初始化图表
     chartInit(){
 
+        //图表的长宽
         let width = 350,
             height = 350
 
+        //设置放置图表的父级元素
         let container = d3.select('#' + this.id)
 
-         let svg = container.append('svg')
+        //新建绘图画布
+        let svg = container.append('svg')
         .attr('width', width + 50)
         .attr('height', height + 100)
         .append('g')
         .attr('transform', 'translate(50,30)')
 
-       // let svg = container.append('g')//.attr('transform','translate(700,600)')
-
+        //贡献度数据，由python代码计算出
         let contrib_data = [[0.4706703162, -0.32356494, 0.5237312673, 0.2503520532, -0.1587296969, -0.4160826872, -0.06351887283, -0.3666742773], 
         [-0.2305916178, -0.4222965801, -0.1046096292,0.2902428, 0.5631073491, -0.08549629881, 0.578059447, -0.121477647]]
 
+        //设置维度名称
         let dimensions = ['出省人数','入省人数','流动比','男女比例','返乡时长','无座率','中转次数','平均年龄']
 
+        //初始化绘图点
         let points = []
 
+        //设置点的位置
         for(let i=0;i<contrib_data.length;i++){
 
             for(let j=0;j<contrib_data[i].length;j++){
@@ -82,42 +88,46 @@ export default {
                 if(i==0){  points.push({'x':val})   }
                 else{
                     points[j].y = val
+                    //设置点的名称
                     points[j].name = dimensions[j]
+                    //计算箭头的方向，由维度在两个主成分的主成分的比例得出
                     points[j].angle = Math.atan(points[j].y / points[j].x)
 
                 }
             }
         }
 
+        //设置坐标轴显示格式
         var formatPercent = d3.format('.0s')
-        // Scales
-        var colorScale = d3.scaleOrdinal(d3.schemePaired);
 
+        //设置x轴比例尺
         var xScale = d3.scaleLinear()
             .domain([0, 0.6])
             .range([0,width])
 
+        //设置y轴比例尺
         var yScale = d3.scaleLinear()
             .domain([0, 0.6])
             .range([height,0])
             
-        // X-axis
+        //设置x轴
         var xAxis = d3.axisBottom()
             .scale(xScale)
             .ticks(5)
-         
 
-        // Y-axis
+        //设置y轴
         var yAxis = d3.axisLeft()
             .scale(yScale)
             .ticks(5)
 
+        //创建直线生成器
         let lineGenerator = d3.line()
             .x(d => d.x)
             .y(d => d.y)
     
         let lines_data = []
     
+        //创建主成分贡献度比例线条数据
         points.forEach(function(d){
     
             let x = xScale(d.x)
@@ -134,6 +144,7 @@ export default {
     
         })
     
+        //绘制线条
         svg.append('g').selectAll('lines')
             .data(lines_data)
             .enter()
@@ -145,7 +156,7 @@ export default {
             .attr('d', lineGenerator)
          
 
-        // Circles
+        //绘制线条中的数据点
         var circles = svg.selectAll('circle')
             .data(points)
             .enter()
@@ -155,6 +166,7 @@ export default {
             .attr('r','3')
             .attr('fill', '#25616E')
 
+        //绘制维度的名字
         svg.selectAll('dim_name')
             .data(points)
             .enter()
@@ -165,7 +177,7 @@ export default {
             .attr('font-size',11)
             .text(d => d.name)
           
-
+        //预设箭头绘制样式
         svg.append("defs").append("marker")
             .attr("id", "triangle")
             .attr("refX", 3)
@@ -180,6 +192,7 @@ export default {
           
         let line_R = 15
 
+        //绘制箭头
         var arrows = svg.selectAll('arrows')
             .data(points)
             .enter()
@@ -192,7 +205,7 @@ export default {
             .attr('stroke','#25616E')
             .attr('stroke-width', 1)
 
-        // X-axis
+        // 绘制x轴
         svg.append('g')
             .attr('class','axis')
             .attr('transform', 'translate(0,' + height + ')')
@@ -206,7 +219,7 @@ export default {
             .style('text-anchor','end') 
             .text('Principal Component 1')
 
-        // Y-axis
+        // 绘制y轴
         svg.append('g')
             .attr('class', 'axis')
             .call(yAxis)
@@ -219,13 +232,6 @@ export default {
             .attr('fill','black')
             .style('text-anchor','end')
             .text('Principal Component 2')
-
-        svg.append('rect')
-            .attr('width',20)
-            .attr('height', 20)
-            .attr('fill','#666')
-            .attr('x',20 + 300)
-            .attr('y', 23 - 100)
   
     },
 

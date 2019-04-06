@@ -75,21 +75,19 @@ export default {
 
   methods: {
 
-    //data process 
     dataProcess(contents){
 
         let population_data = contents;
+
+        //获得数据维度名称
         let columns = population_data['columns']
+
+        //将数组转换为字典
         let data_dict = this.get_dimension_values(population_data, columns)
 
         return  {columns, population_data}
     },
 
-    //Chart initialization
-    chartInit(data, dimensions, data_dict){
-
-       
-    },
     get_dimension_values(data, dimension){
 
         let data_dict = {}

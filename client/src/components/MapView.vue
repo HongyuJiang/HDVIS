@@ -21,12 +21,8 @@ const props = {
   },
   name: {
     type: String,
-    default: () => '贡献度排名',
+    default: () => '未命名',
   },
-  focus: {
-    type: String,
-    default: () => '高血压',
-  },    
   top:{
     type: Number,
     default: () => 500,
@@ -34,8 +30,7 @@ const props = {
   left:{
     type: Number,
     default: () => 350,
-  },
-  data: {}
+  }
 };
 
 export default {
@@ -44,24 +39,19 @@ export default {
   props,
   mounted: function() {
 
-    //Initialize the size of chart
-    this.windowResize(window.innerWidth * 0.3, window.innerHeight * 0.3);
-
-    //Add a listener for window's resize`
-    window.addEventListener("resize", () => {
-      this.windowResize(window.innerWidth * 0.3, window.innerHeight * 0.3);
-    });
-
-
+    //设置图表位置
     d3.select(d3.select('#' + this.id).node().parentNode)
     .style('position', 'absolute')
     .style('top', this.top + 'px')
     .style('left', this.left + 'px')
 
+
+    //获取数据并绘制图表
      DataProvider.getPopulationData().then(response_popuData => {
 
             DataProvider.getMapData().then(response_mapData => {
 
+                //将CSV文件解析为字典数据
                 let population_data = dsv.csvParse(response_popuData.data);
 
                 let geoChina = response_mapData.data
@@ -77,66 +67,65 @@ export default {
     });
   },
 
-  watch:{
-
-
-
-  },
 
   methods: {
 
-
-    //Chart initialization
+    //图表初始化
     chartInit(mapData, population_data){
-
 
         let that = this
 
+        //图表的长宽
         let width = 850,
             height = 350
 
+        //设置放置图表的父级元素
         let container = d3.select('#' + this.id)
 
-         let svg = container.append('svg')
+        //新建绘图画布
+        let svg = container.append('svg')
         .attr('width', width + 50)
         .attr('height', height + 120)
         .append('g')
         .attr('transform', 'translate(80,70)')
 
+        //构建省份数据字典
         let province_location = {}
 
+        //将数据存入字典
         mapData.features.forEach(function(d){
 
             province_location[d.properties.name] = d.properties.cp
         })
 
-
+        //新建地理投影方法
         var projection = d3
             .geoMercator() 
             .scale(550)	
             .center([105,30]); 
 
+        //构建地图绘制器
         var path = d3.geoPath().projection(projection);　
 
-        drawMaps(mapData)
-
-        function drawMaps(geojson) {
-            svg.selectAll("path")
-                .data(geojson.features)
-                .enter()
-                .append("path")
-                .attr("d", path)  
-                .attr("fill", "#ccc")
-                .attr("fill-opacity", 0.1)
-                .attr("stroke", "#333")
-                .attr("stroke-width", 2)
-                .attr("stroke-opacity", 0.3);    
-        }
-
+        //绘制地图
+        svg.selectAll("path")
+            .data(mapData.features)
+            .enter()
+            .append("path")
+            .attr("d", path)  
+            .attr("fill", "#ccc")
+            .attr("fill-opacity", 0.1)
+            .attr("stroke", "#333")
+            .attr("stroke-width", 2)
+            .attr("stroke-opacity", 0.3);    
+        
+        //柱状图数据/迁入迁出比例数据
         let marker_geo_coor = []
 
+        //柱状图数据生成
         population_data.forEach(function(d){
 
+            //将经纬度坐标系转换为x,y坐标系
             let point = projection(province_location[d['省份']])
 
             let count = parseFloat(d['迁出/迁入'])
@@ -146,6 +135,8 @@ export default {
             marker_geo_coor.push({'name': d['省份'], 'x':point[0], 'y':point[1], 'count':count})
         })
 
+
+        //绘制柱状图
         svg.selectAll('indicator')
             .data(marker_geo_coor)
             .enter()
@@ -160,6 +151,7 @@ export default {
             .attr('height', d=> d.count >= 1 ? d.count * 2 : 1/d.count * 2)
             .attr('width', 10)
 
+        //绘制柱状图基座
         svg.selectAll('indicator')
             .data(marker_geo_coor)
             .enter()
@@ -171,6 +163,7 @@ export default {
             .attr('height', 5)
             .attr('width', 10)
 
+        //绘制柱状图名称
         svg.selectAll('indicator_name')
             .data(marker_geo_coor)
             .enter()
@@ -185,6 +178,7 @@ export default {
                that.$root.$emit('ProvinceSeleted', d.name)
             })
 
+        //增加颜色解释
         svg.append('rect')
           .attr('x', 200)
           .attr('y', 300)
@@ -214,24 +208,11 @@ export default {
         
     },
 
-    //Update the focus item
-    focusUpdate(focus){
-
-
-    },
-
-    //Change chart size when window's size changed
-    windowResize(width, height){
-
-      //this.chart.changeSize(width, height)
-
-    }
   }
 }
 </script>
 
 <style lang="css">
-
 
 .bubble-chart-container{
   

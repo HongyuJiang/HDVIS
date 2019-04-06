@@ -21,11 +21,7 @@ const props = {
   },
   name: {
     type: String,
-    default: () => '慢病-小组统计',
-  },
-  focus: {
-    type: String,
-    default: () => '高血压',
+    default: () => '未命名',
   },
   top:{
     type: Number,
@@ -39,6 +35,7 @@ const props = {
  
 };
 
+//为数组增加删除函数
 Array.prototype.remove = function(from, to) {
     var rest = this.slice((to || from) + 1 || this.length);
     this.length = from < 0 ? this.length + from : from;
@@ -52,24 +49,13 @@ export default {
   props,
   mounted: function() {
 
+    //设置图表位置
     d3.select('#' + this.id)
     .style('position', 'absolute')
     .style('left', this.left + 'px')
     .style('top', this.top + 'px')
 
-    //Initialize the size of chart
-    this.windowResize(window.innerWidth * 0.3, window.innerHeight * 0.3);
-
-    //Add a listener for window's resize`
-    window.addEventListener("resize", () => {
-      this.windowResize(window.innerWidth * 0.3, window.innerHeight * 0.3);
-    });
-
-
-    d3.select(d3.select('#' + this.id).node().parentNode)
-    .style('top', this.top + 'px')
-    .style('right', this.right + 'px')
-
+    //获取人口数据
     DataProvider.getPopulationData().then(response => {
 
         let data = dsv.csvParse(response.data)
@@ -82,6 +68,7 @@ export default {
        
     });
 
+    //接收投影视图框选点
     this.$root.$on('PointsSeleted', (points) => {
 
       this.provinceHighlight(points)
@@ -91,21 +78,23 @@ export default {
 
   methods: {
 
-    //data process 
+    //数据处理
     dataProcess(contents){
 
         let population_data = contents;
         
+        //获取数据维度名称
         let columns = population_data['columns']
 
+        //删除省名
         columns.shift()
 
+        //将数组转换为字典
         let data_dict = this.get_dimension_values(population_data, columns)
 
         return  {columns, data_dict}
     },
 
-    //Chart initialization
     chartInit(data, dimensions, data_dict){
 
         let container = d3.select('#' + this.id)
@@ -121,17 +110,23 @@ export default {
 
         this.svg = svg
 
+        //设置数据轴文字显示格式
         var formatPercent = d3.format('~s')
 
+        //y轴比例尺集合
         let yScale = {}
 
+        //分布图高度比例尺
         let zScale = d3.scaleLinear().domain([0, height])
 
         for (let index in dimensions) {
 
             name = dimensions[index]
 
+            //计算每个维度的数据范围
             let true_extent = d3.extent(data, function(d) { return +d[name]; })
+
+            //将数据范围扩展以汇聚靠近零点的数据
             let fitted_extent = [true_extent[0] * 0.8, true_extent[1] * 1.2]
 
             if(name == '出省人数' || name == '入省人数' ){
@@ -139,17 +134,19 @@ export default {
                 fitted_extent[0] = -5000000
             }
 
+            //将数据范围扩展以汇聚靠近零点的数据
             yScale[name] = d3.scaleLinear()
                 .domain(fitted_extent)
                 .range([height, 0])
 
         }
 
-        // Build the X scale -> it find the best position for each Y axis
+        // 创建x轴比例尺
         let xScale = d3.scalePoint()
         .range([0, width])
         .domain(dimensions);
 
+        //找到需要计算数据分布的维度
         let dist_dimensions = []
 
         dimensions.forEach(function(dim){
@@ -161,6 +158,7 @@ export default {
 
         dist_dimensions.remove(3)
 
+        //线条生成器
         function path(d) {
             let lineGenerator = d3.line()//.curve(d3.curveCardinal)
             return lineGenerator(dimensions.map(function(p) { return [xScale(p), yScale[p](d[p])]; }))
@@ -170,6 +168,7 @@ export default {
 
         let that = this
 
+        //使用密度估计算法对每个维度的数据分布进行计算并分块
         dist_dimensions.forEach(function(dim){
 
             let kde = that.kernelDensityEstimator(that.kernelEpanechnikov(7), zScale.ticks(40))
@@ -177,6 +176,7 @@ export default {
             dist_data[dim] = density
         })
 
+        //绘制数据分布图
         dist_dimensions.forEach(function(dim){
 
             let bins_container = svg.append('g')
@@ -185,9 +185,9 @@ export default {
              bins_container.append("path")
              .attr("class", "mypath")
              .datum(dist_data[dim])
-             .attr("fill", "#FE7F2D")
-             .attr("opacity", "1")
-             .attr("stroke", "black")
+             .attr("fill", "#999")
+             .attr("opacity", "0.7")
+             .attr("stroke", "#333")
              .attr("stroke-width", 2)
              .attr("stroke-linejoin", "round")
              .attr("d",  d3.line()
@@ -198,7 +198,7 @@ export default {
 
         })
 
-        // Draw the lines
+        // 画线
         svg.selectAll("myPath")
             .data(data)
             .enter()
@@ -209,7 +209,7 @@ export default {
             .style("stroke", '#666' )
             .style("opacity", 0.3)
 
-        // Draw the axis:
+        // 绘制轴
         svg.selectAll("myAxis")
             .data(dimensions).enter()
             .append("g")
@@ -243,6 +243,7 @@ export default {
           .text('平行坐标与数据分布')
     },
 
+    //交互事件：当投影视图中点被选中的时候，相应的线条将被高亮
     provinceHighlight(selected){
 
         let selectedJugher = {}
@@ -262,19 +263,7 @@ export default {
 
     },
 
-    //Update the focus item
-    focusUpdate(focus){
-
-
-    },
-
-    //Change chart size when window's size changed
-    windowResize(width, height){
-
-      //this.chart.changeSize(width, height)
-
-    },
-    // Function to compute density
+    // 数据密度估计
     kernelDensityEstimator(kernel, X) {
         return function(V) {
         return X.map(function(x) {
@@ -282,11 +271,15 @@ export default {
         });
         };
     },
+
+    //密度估计函数Epanechnikov
     kernelEpanechnikov(k) {
         return function(v) {
         return Math.abs(v /= k) <= 1 ? 0.75 * (1 - v * v) / k : 0;
         };
     },
+
+    //将数组转换为字典
     get_dimension_values(data, dimension){
 
         let data_dict = {}

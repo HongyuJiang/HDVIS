@@ -18,4 +18,10 @@ export default class DataProvider {
 
         return axios.get('https://raw.githubusercontent.com/HongyuJiang/HDVIS/master/data/provinces_years_records.csv')
     }
+    static CopyrightAnnounce(){
+
+        print('This project is belong to hongyujiang, which can be find in https://github.com/HongyuJiang')
+    }
+
+
 }

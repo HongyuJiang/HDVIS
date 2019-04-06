@@ -21,11 +21,7 @@ const props = {
   },
   name: {
     type: String,
-    default: () => '慢病-小组统计',
-  },
-  focus: {
-    type: String,
-    default: () => '高血压',
+    default: () => '未命名',
   },
   top:{
     type: Number,
@@ -43,15 +39,6 @@ export default {
   name: 'project-chart',
   props,
   mounted: function() {
-
-    //Initialize the size of chart
-    this.windowResize(window.innerWidth * 0.3, window.innerHeight * 0.3);
-
-    //Add a listener for window's resize`
-    window.addEventListener("resize", () => {
-      this.windowResize(window.innerWidth * 0.3, window.innerHeight * 0.3);
-    });
-
 
     d3.select(d3.select('#' + this.id).node().parentNode)
     .style('position', 'absolute')
@@ -76,7 +63,7 @@ export default {
 
   methods: {
 
-    //data process 
+    //数据处理
     dataProcess(contents){
 
       let origin_data = dsv.csvParse(contents);
@@ -95,7 +82,7 @@ export default {
     
     },
 
-    //Chart initialization
+    //图表初始化
     chartInit(points){
 
         var that = this
@@ -141,7 +128,7 @@ export default {
           d.y = yScale(d.y)
         })
 
-        // Circles
+    
         var circles = svg.selectAll('circle')
             .data(points)
             .enter()
@@ -157,6 +144,8 @@ export default {
             .attr('stroke-width',1)
             .attr('fill', '#333')
 
+
+        //注册鼠标点击事件，开始进行框选操作
         container.select('svg').on("mousedown", function(e) {
 
                 d3.event.preventDefault();
@@ -173,6 +162,7 @@ export default {
               
                
             })
+            //注册鼠标移动事件，选择框跟随鼠标进行移动
             .on("mousemove", function(e) {
 
                 d3.event.preventDefault();
@@ -214,6 +204,8 @@ export default {
       
                 }
             })
+
+            //注册鼠标点击结束事件，删除选择框，传递选择点
             .on( "mouseup", function() {
 
                 let radius = 1.5
@@ -233,6 +225,7 @@ export default {
 
                   let selectedPoints = []
 
+                  //选中的点颜色变红
                   svg.selectAll('circle').each( function( state_data, i) {
 
                         if(
@@ -246,6 +239,7 @@ export default {
                         }
                   });
 
+                  //将选中的点传给平行坐标
                   that.$root.$emit('PointsSeleted', selectedPoints)
                 
                 }
@@ -253,7 +247,7 @@ export default {
                   svg.select("rect.selection").remove();
             });
     
-        // X-axis
+      
         svg.append('g')
             .attr('class','axis')
             .attr('transform', 'translate(0,' + 0 + ')')
@@ -268,7 +262,7 @@ export default {
             .attr('font-size','10')
             .style('text-anchor','middle')
             .text('Principal Componnet 1')
-        // Y-axis
+      
         svg.append('g')
             .attr('class', 'axis')
             .attr('transform', 'translate(' + (width+100) + ',0)')
@@ -285,6 +279,7 @@ export default {
             .style('text-anchor','middle')
             .text('Principal Componnet 2')
 
+        //绘制外框
         let box_round_lines = 
         [
             {'x1':400,'x2':400,'y1':0,'y2':300}, 
@@ -308,16 +303,16 @@ export default {
         let x_series = points.map(d => xScale.invert(d.x))
         let y_series = points.map(d => yScale.invert(d.y))
 
-
+        //计算数据点在两个主成分上的贡献度分布
         var histogram = d3.histogram()
-            .value(function(d) { return d; })   // I need to give the vector of value
-            .domain(xScale.domain())  // then the domain of the graphic
-            .thresholds(xScale.ticks(10)); // then the numbers of bins
+            .value(function(d) { return d; })  
+            .domain(xScale.domain())  
+            .thresholds(xScale.ticks(10)); 
       
-        // And apply this function to data to get the bins
+        //生成数据桶
         var bins = histogram(x_series);
       
-        // append the bar rectangles to the svg element
+        // 绘制柱状图
         svg.selectAll("hist_rect")
             .data(bins)
             .enter()
@@ -329,10 +324,8 @@ export default {
             .attr("y", height)
             .style("fill", "#666")
 
-
         var bins = histogram(y_series);
-      
-            // append the bar rectangles to the svg element
+    
         svg.selectAll("hist_rect")
             .data(bins)
             .enter()
@@ -360,18 +353,7 @@ export default {
             .text('主成分分析降维投影')
     },
 
-    //Update the focus item
-    focusUpdate(focus){
 
-
-    },
-
-    //Change chart size when window's size changed
-    windowResize(width, height){
-
-      //this.chart.changeSize(width, height)
-
-    }
   }
 }
 </script>
