@@ -146,7 +146,7 @@ export default {
             .range([margin.left, width - margin.right])
         
         let y = d3.scaleLinear()
-            .domain([min,max])
+            .domain([0, max])
             .range([height - margin.bottom, margin.top])
 
         let xAxis = g => g
