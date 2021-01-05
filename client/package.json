@@ -10,7 +10,7 @@
     "build": "node build/build.js"
   },
   "dependencies": {
-    "axios": "^0.18.0",
+    "axios": "^0.21.1",
     "d3": "^5.5.0",
     "dns": "^0.2.2",
     "module": "^1.2.5",
